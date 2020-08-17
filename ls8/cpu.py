@@ -7,10 +7,12 @@ class CPU:
     """Main CPU class."""
 
     def __init__(self):
-        """Construct a new CPU."""
+        # pc
         self.pc = 0
-        self.reg = [0] * 8
+        # ram
         self.ram = [0] * 256
+        # register
+        self.reg = [0] * 8
 
     def ram_read(self, mar):
         read = self.ram[mar]
@@ -88,14 +90,18 @@ class CPU:
         #     0b00000001,  # HLT
         # ]
 
-        HLT = 0b00000001
+        # pointer
         LDI = 0b10000010
+        # print
         PRN = 0b01000111
+        # halt
+        HLT = 0b00000001
 
-        running = True
+        # computer "on" var to perform while loop
+        isRunning = True
 
-        while running:
-            # set instruction
+        while isRunning:
+            # set instruction from our pc counter
             instruction = self.ram_read(self.pc)
 
             read_1 = self.ram_read(self.pc + 1)
@@ -103,7 +109,7 @@ class CPU:
 
             if instruction == HLT:
                 self.pc += 1
-                running = False
+                isRunning = False
 
             elif instruction == LDI:
                 self.pc += 3
@@ -114,6 +120,6 @@ class CPU:
                 print(self.reg[read_1])
 
             else:
-                running = False
+                isRunning = False
                 print("Error operation not found")
 
