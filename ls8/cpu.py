@@ -30,33 +30,37 @@ class CPU:
 
     # todo: "program" will be removed from inside func
     # "program" will be an arg passed into load()
-    def load(self):
+    def load(self, program):
         """Load a program into memory."""
 
         address = 0
 
-        # For now, we've just hardcoded a program:
+        with open(program) as f:
+            for line in f:
+                # remove '#' from lines
+                line_split = line.split("#")[0]
+                action = line_split.strip()
 
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
+                if action == "":
+                    continue
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                # set instruction based on aciton
+                instruction = int(action, 2)
+                self.ram_write(address, instruction)
+
+                address += 1
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
+        # addition
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         # elif op == "SUB": etc
+        # multiplication
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -105,6 +109,8 @@ class CPU:
         PRN = 0b01000111
         # halt
         HLT = 0b00000001
+        # multiply
+        MUL = 0b10100010
 
         # computer "on" var to perform while loop
         isRunning = True
@@ -113,8 +119,9 @@ class CPU:
             # set instruction from our pc counter
             instruction = self.ram_read(self.pc)
 
-            read_1 = self.ram_read(self.pc + 1)
-            read_2 = self.ram_read(self.pc + 2)
+            # standard naming convention is opr_a (operation)
+            opr_a = self.ram_read(self.pc + 1)
+            opr_b = self.ram_read(self.pc + 2)
 
             if instruction == HLT:
                 self.pc += 1
@@ -122,11 +129,16 @@ class CPU:
 
             elif instruction == LDI:
                 self.pc += 3
-                self.reg[read_1] = read_2
+                self.reg[opr_a] = opr_b
 
             elif instruction == PRN:
                 self.pc += 2
-                print(self.reg[read_1])
+                print(self.reg[opr_a])
+
+            # case: multiply
+            elif instruction == MUL:
+                self.pc += 3
+                self.alu("MUL", opr_a, opr_b)
 
             else:
                 isRunning = False
