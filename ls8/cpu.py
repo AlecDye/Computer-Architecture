@@ -3,6 +3,13 @@
 import sys
 
 
+# Day 2 Goals:
+
+# 1. -> refactor the load() func to accept a ls8 file as an arg (instead of hardcoded program)
+
+# 2. -> create multiple instruction (`run mutl.ls8`)
+
+
 class CPU:
     """Main CPU class."""
 
@@ -21,6 +28,8 @@ class CPU:
     def ram_write(self, mar, mdr):
         self.ram[mar] = mdr
 
+    # todo: "program" will be removed from inside func
+    # "program" will be an arg passed into load()
     def load(self):
         """Load a program into memory."""
 
@@ -82,12 +91,12 @@ class CPU:
 
         #         program = [
         #     # From print8.ls8
-        #     0b10000010,  # LDI R0,8
+        #     0b10000010,  # LDI R0,8 plus 3 -> PRN
         #     0b00000000,
         #     0b00001000,
-        #     0b01000111,  # PRN R0
+        #     0b01000111,  # PRN R0 plus 2 -> PRN
         #     0b00000000,
-        #     0b00000001,  # HLT
+        #     0b00000001,  # HLT plus 1 -> LDI
         # ]
 
         # pointer
