@@ -8,5 +8,7 @@ from cpu import *
 cpu = CPU()
 
 # pass in the program to load() to test
-cpu.load()
+cpu.load(sys.argv[1])
+# IndexError: list index out of range?
+
 cpu.run()
