@@ -3,11 +3,8 @@
 import sys
 
 
-# Day 2 Goals:
-
-# 1. -> refactor the load() func to accept a ls8 file as an arg (instead of hardcoded program)
-
-# 2. -> create multiple instruction (`run mutl.ls8`)
+# Day 3 Goals:
+# Implement the System Stack and be able to run the `stack.ls8` program
 
 
 class CPU:
@@ -32,23 +29,28 @@ class CPU:
     # "program" will be an arg passed into load()
     def load(self, program):
         """Load a program into memory."""
+        try:
+            address = 0
 
-        address = 0
+            with open(program) as f:
+                for line in f:
+                    # remove '#' from lines
+                    line_split = line.split("#")[0]
+                    # string number
+                    action = line_split.strip()
 
-        with open(program) as f:
-            for line in f:
-                # remove '#' from lines
-                line_split = line.split("#")[0]
-                action = line_split.strip()
+                    if action == "":
+                        continue
 
-                if action == "":
-                    continue
+                    # set instruction based on aciton
+                    instruction = int(action, 2)
+                    self.ram_write(address, instruction)
 
-                # set instruction based on aciton
-                instruction = int(action, 2)
-                self.ram_write(address, instruction)
+                    address += 1
 
-                address += 1
+        except FileExistsError:
+            print("Error: File not found")
+            sys.exit(2)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -112,6 +114,12 @@ class CPU:
         # multiply
         MUL = 0b10100010
 
+        PUSH = 0b1000101
+
+        POP = 0b01000110
+
+        SP = 7
+
         # computer "on" var to perform while loop
         isRunning = True
 
@@ -139,6 +147,18 @@ class CPU:
             elif instruction == MUL:
                 self.pc += 3
                 self.alu("MUL", opr_a, opr_b)
+
+            elif instruction == PUSH:
+                self.reg[SP] -= 1
+                # value taken from reg and stored in ram
+                self.ram_write(self.reg[opr_a], self.reg[SP])
+                self.pc += 2
+
+            elif instruction == POP:
+                self.pc += 2
+                val = self.ram_read(self.reg[SP])
+                self.reg[opr_a] = val
+                self.reg[SP] += 1
 
             else:
                 isRunning = False
