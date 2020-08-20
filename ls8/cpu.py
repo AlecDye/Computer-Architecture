@@ -1,32 +1,31 @@
-"""CPU functionality."""
-
 import sys
 
 
-# Day 3 Goals:
-# Implement the System Stack and be able to run the `stack.ls8` program
-
-
 class CPU:
-    """Main CPU class."""
-
     def __init__(self):
-        # pc
-        self.pc = 0
-        # ram
-        self.ram = [0] * 256
         # register
+        # create 8 registers
         self.reg = [0] * 8
+        # ram -> Randomn Access Memory
+        # dedicate 256 bytes to memory
+        self.ram = [0] * 256
+        # pc = Program Counter -> stores address of current instruction
+        self.pc = 0
 
+        self.reg[7] = 0xF4
+
+        # Stack pointer
+        self.sp = self.reg[7]
+
+    # MAR = Memory Access Register -> stores mem address for read/write
     def ram_read(self, mar):
-        read = self.ram[mar]
-        return read
+        return self.ram[mar]
 
+    # MDR = Memory Data Register -> holds write value or value that was read
+    # mar = address, mdr = value
     def ram_write(self, mar, mdr):
         self.ram[mar] = mdr
 
-    # todo: "program" will be removed from inside func
-    # "program" will be an arg passed into load()
     def load(self, program):
         """Load a program into memory."""
         try:
@@ -58,7 +57,6 @@ class CPU:
         # addition
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
         # multiplication
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
@@ -93,32 +91,27 @@ class CPU:
     def run(self):
         """Run the CPU."""
 
-        # add instruction handlers
-
-        #         program = [
-        #     # From print8.ls8
-        #     0b10000010,  # LDI R0,8 plus 3 -> PRN
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111,  # PRN R0 plus 2 -> PRN
-        #     0b00000000,
-        #     0b00000001,  # HLT plus 1 -> LDI
-        # ]
-
+        # INSTRUCTIONS
+        # halt
+        HLT = 0b00000001
         # pointer
         LDI = 0b10000010
         # print
         PRN = 0b01000111
-        # halt
-        HLT = 0b00000001
+
+        # MATH
+        # add
+        ADD = 0b10100000
         # multiply
         MUL = 0b10100010
 
+        # STACK
+        # push (add to stack)
         PUSH = 0b1000101
-
+        # pop (remove from stack)
         POP = 0b01000110
 
-        SP = 7
+        # TODO: CALL & RET
 
         # computer "on" var to perform while loop
         isRunning = True
@@ -131,36 +124,48 @@ class CPU:
             opr_a = self.ram_read(self.pc + 1)
             opr_b = self.ram_read(self.pc + 2)
 
+            # halt program turn "off" computer
             if instruction == HLT:
                 self.pc += 1
                 isRunning = False
 
             elif instruction == LDI:
-                self.pc += 3
                 self.reg[opr_a] = opr_b
+                self.pc += 3
 
+            # case: print
             elif instruction == PRN:
                 self.pc += 2
                 print(self.reg[opr_a])
 
+            # case: add
+            elif instruction == ADD:
+                self.alu("ADD", opr_a, opr_b)
+
             # case: multiply
             elif instruction == MUL:
-                self.pc += 3
                 self.alu("MUL", opr_a, opr_b)
+                self.pc += 3
 
+            # case: stack -> push
             elif instruction == PUSH:
-                self.reg[SP] -= 1
-                # value taken from reg and stored in ram
-                self.ram_write(self.reg[opr_a], self.reg[SP])
+                # self.ram_write(self.reg[opr_a], self.sp)
+                register_store = self.ram[self.pc + 1]
+                value = self.reg[register_store]
+                self.sp -= 1
+                self.ram[self.sp] = value
                 self.pc += 2
 
             elif instruction == POP:
+                # value = self.ram_read(self.sp)
+                register_store = self.ram[self.pc + 1]
+                value = self.ram[self.sp]
+                self.reg[register_store] = value
+                self.sp += 1
                 self.pc += 2
-                val = self.ram_read(self.reg[SP])
-                self.reg[opr_a] = val
-                self.reg[SP] += 1
 
             else:
                 isRunning = False
                 print("Error operation not found")
+                sys.exit(1)
 
