@@ -174,9 +174,11 @@ class CPU:
                 register_store = self.ram[self.pc + 1]
                 sub_routine = self.reg[register_store]
                 self.pc = sub_routine
-                return
+                print(f"after execution pc -> {self.pc}")
 
             elif instruction == RET:
+                # debug
+                print("return test")
                 address = self.ram[self.sp]
                 self.sp += 1
                 self.pc = address
@@ -185,5 +187,6 @@ class CPU:
                 # DEBUG
                 print(f"self.pc = {self.pc}")
                 print(f"last instruction = {self.ram_read(self.pc)}")
+                isRunning = False
                 sys.exit(1)
 
