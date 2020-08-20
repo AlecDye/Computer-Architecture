@@ -111,7 +111,9 @@ class CPU:
         # pop (remove from stack)
         POP = 0b01000110
 
-        # TODO: CALL & RET
+        CALL = 0b01010000
+
+        RET = 0b00010001
 
         # computer "on" var to perform while loop
         isRunning = True
@@ -150,22 +152,32 @@ class CPU:
             # case: stack -> push
             elif instruction == PUSH:
                 # self.ram_write(self.reg[opr_a], self.sp)
-                register_store = self.ram[self.pc + 1]
-                value = self.reg[register_store]
+                value = self.reg[opr_a]
                 self.sp -= 1
                 self.ram[self.sp] = value
                 self.pc += 2
 
             elif instruction == POP:
                 # value = self.ram_read(self.sp)
-                register_store = self.ram[self.pc + 1]
                 value = self.ram[self.sp]
-                self.reg[register_store] = value
+                self.reg[opr_a] = value
                 self.sp += 1
                 self.pc += 2
+
+            elif instruction == CALL:
+                address = self.pc + 2
+                self.sp -= 1
+                self.ram[self.sp] = address
+                sub_routine = self.reg[opr_a]
+                self.pc = sub_routine
+
+            elif instruction == RET:
+                address = self.ram[self.sp]
+                self.sp += 1
+                self.pc = address
 
             else:
                 isRunning = False
                 print("Error operation not found")
-                sys.exit(1)
+                # sys.exit(1)
 
