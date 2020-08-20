@@ -132,6 +132,7 @@ class CPU:
                 self.pc += 1
                 isRunning = False
 
+            # load immediate value
             elif instruction == LDI:
                 self.reg[opr_a] = opr_b
                 self.pc += 3
@@ -144,6 +145,7 @@ class CPU:
             # case: add
             elif instruction == ADD:
                 self.alu("ADD", opr_a, opr_b)
+                self.pc += 3
 
             # case: multiply
             elif instruction == MUL:
@@ -166,19 +168,14 @@ class CPU:
                 self.pc += 2
 
             elif instruction == CALL:
-                # debug
-                print(f"CALL active pc -> {self.pc}")
-                address = self.pc + 2
+                return_address = self.pc + 2
                 self.sp -= 1
-                self.ram[self.sp] = address
+                self.ram[self.sp] = return_address
                 register_store = self.ram[self.pc + 1]
                 sub_routine = self.reg[register_store]
                 self.pc = sub_routine
-                print(f"after execution pc -> {self.pc}")
 
             elif instruction == RET:
-                # debug
-                print("return test")
                 address = self.ram[self.sp]
                 self.sp += 1
                 self.pc = address
