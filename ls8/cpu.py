@@ -123,6 +123,7 @@ class CPU:
             instruction = self.ram_read(self.pc)
 
             # standard naming convention is opr_a (operation)
+            # convience variables
             opr_a = self.ram_read(self.pc + 1)
             opr_b = self.ram_read(self.pc + 2)
 
@@ -165,11 +166,15 @@ class CPU:
                 self.pc += 2
 
             elif instruction == CALL:
+                # debug
+                print(f"CALL active pc -> {self.pc}")
                 address = self.pc + 2
                 self.sp -= 1
                 self.ram[self.sp] = address
-                sub_routine = self.reg[opr_a]
+                register_store = self.ram[self.pc + 1]
+                sub_routine = self.reg[register_store]
                 self.pc = sub_routine
+                return
 
             elif instruction == RET:
                 address = self.ram[self.sp]
@@ -177,7 +182,8 @@ class CPU:
                 self.pc = address
 
             else:
-                isRunning = False
-                print("Error operation not found")
-                # sys.exit(1)
+                # DEBUG
+                print(f"self.pc = {self.pc}")
+                print(f"last instruction = {self.ram_read(self.pc)}")
+                sys.exit(1)
 
